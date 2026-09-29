@@ -154,14 +154,50 @@ document.querySelectorAll('img, iframe').forEach(el => {
 
 // Tabs
 const tabs = document.querySelectorAll('[role="tab"]');
+const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)');
 
 function selectTab(tab) {
-    for (const t of tabs) {
-        const selected = t === tab;
-        t.setAttribute('aria-selected', String(selected));
-        document.getElementById(t.getAttribute('aria-controls')).hidden = !selected;
-    }
-    close(); // in case the lightbox is open
+    const id = tab.getAttribute('aria-controls');
+
+    const apply = () => {
+        for (const t of tabs) {
+            const selected = t === tab;
+            t.setAttribute('aria-selected', String(selected));
+            document.getElementById(t.getAttribute('aria-controls')).hidden = !selected;
+        }
+        document.documentElement.dataset.theme = id;
+        close(); // in case the lightbox is open
+    };
+
+    if (!document.startViewTransition || reduceMotion.matches) return apply();
+
+    // Circle starts at the center of the clicked tab
+    const rect = tab.getBoundingClientRect();
+    const x = rect.left + rect.width / 2;
+    const y = rect.top + rect.height / 2;
+    const radius = Math.hypot(
+        Math.max(x, innerWidth - x),
+        Math.max(y, innerHeight - y)
+    );
+
+    document.startViewTransition(apply).ready.then(() => {
+        document.documentElement.animate(
+            {
+                clipPath: [
+                    `circle(0px at ${x}px ${y}px)`,
+                    `circle(${radius}px at ${x}px ${y}px)`,
+                ],
+            },
+            {
+                duration: 600,
+                easing: 'cubic-bezier(0.4, 0, 0.2, 1)',
+                pseudoElement: '::view-transition-new(root)',
+            }
+        );
+    });
 }
 
-tabs.forEach(t => t.addEventListener('click', () => selectTab(t)));
+tabs.forEach(t => t.addEventListener('click', () => {
+    if (t.getAttribute('aria-selected') === 'true') return; // no animation on the active tab
+    selectTab(t);
+}));

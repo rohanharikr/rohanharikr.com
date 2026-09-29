@@ -6,6 +6,28 @@
     --depth: 0;
 }
 
+/* Per-tab themes */
+html[data-theme="play"] {
+    --bg: #eaf2ff;
+    --line: #a8bfe3;
+}
+
+html[data-theme="fun"] {
+    --bg: #fff3e3;
+    --line: #e3c39a;
+}
+
+html {
+    background: var(--bg);
+}
+
+/* Replace the default crossfade with the circle reveal */
+::view-transition-old(root),
+::view-transition-new(root) {
+    animation: none;
+    mix-blend-mode: normal;
+}
+
 html:not(.ready) section>ol {
     visibility: hidden;
 }
@@ -254,4 +276,29 @@ li img {
     [role="tabpanel"]:not([hidden]) {
         animation: none;
     }
+}
+
+.glass-nav {
+    background: color-mix(in srgb, var(--bg) 35%, transparent);
+    backdrop-filter: blur(14px) saturate(180%);
+    -webkit-backdrop-filter: blur(14px) saturate(180%);
+    border: 1px solid rgb(255 255 255 / 0.6);
+    box-shadow:
+        inset 0 1px 0 rgb(255 255 255 / 0.9),
+        inset 0 -1px 1px rgb(0 0 0 / 0.04),
+        0 8px 24px rgb(0 0 0 / 0.08),
+        0 2px 6px rgb(0 0 0 / 0.06);
+}
+
+.glass-nav::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: linear-gradient(to bottom, rgb(255 255 255 / 0.45), transparent 55%);
+    pointer-events: none;
+}
+
+.glass-nav ul {
+    position: relative;
 }
