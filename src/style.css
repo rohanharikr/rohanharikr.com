@@ -1,0 +1,224 @@
+@import "tailwindcss";
+
+:root {
+    --bg: #fff;
+    --line: #ccc;
+}
+
+html:not(.ready) section>ol {
+    visibility: hidden;
+}
+
+a {
+    @apply underline;
+}
+
+img {
+    @apply cursor-zoom-in;
+}
+
+img,
+iframe {
+    @apply rounded-md w-[calc(100%-1.5rem)] h-auto ml-6 mt-1 relative border border-[#ccc];
+}
+
+iframe {
+    @apply h-[200px] md:h-[343px];
+}
+
+h2,
+p {
+    @apply text-sm opacity-65;
+}
+
+ol,
+ul {
+    border-left: 1px dotted var(--line);
+}
+
+:is(ol, ul) :is(ol, ul) {
+    @apply ml-6;
+}
+
+li {
+    @apply relative pt-2 leading-6;
+}
+
+li:last-child::after {
+    content: '';
+    position: absolute;
+    left: -1px;
+    top: calc(1.25rem + 1px);
+    bottom: 0;
+    width: 1px;
+    background: var(--bg);
+}
+
+li:last-child>.toggle[aria-expanded='true']::before {
+    content: '';
+    position: absolute;
+    left: -1px;
+    top: 0;
+    height: 50%;
+    width: 1px;
+    border-left: 1px dotted var(--line);
+    background: var(--bg);
+}
+
+li:not(:has(> ol, > ul)) {
+    @apply flex flex-wrap items-center gap-x-2;
+}
+
+li:not(:has(> ol, > ul))::before {
+    content: '';
+    @apply w-4;
+    border-top: 1px dotted var(--line);
+}
+
+li:not(:has(> ol, > ul))>p {
+    @apply basis-full;
+}
+
+li>p {
+    @apply pl-6;
+}
+
+[hidden] {
+    display: none !important;
+}
+
+.toggle {
+    @apply sticky w-fit whitespace-nowrap bg-(--bg);
+    top: calc((var(--depth) + 1) * 1.5rem);
+    z-index: calc(100 - var(--depth));
+    box-shadow: 0 0 0 100vmax var(--bg);
+    clip-path: inset(0 -100vmax 0 0);
+}
+
+/* Collapsed buttons don't stick */
+.toggle[aria-expanded='false'] {
+    @apply static;
+}
+
+section>h3 {
+    @apply sticky top-0 z-[200] flex w-full h-6 items-center gap-1 bg-(--bg);
+}
+
+/* Heading only sticks when a top-level item is open */
+section:not(:has(> ol > li > .toggle[aria-expanded='true']))>h3 {
+    @apply static;
+}
+
+li img {
+    @apply cursor-zoom-in;
+}
+
+/* Hidden until opened */
+.lightbox {
+    @apply fixed inset-0 z-[300] grid place-items-center bg-transparent invisible transition-colors duration-300 cursor-zoom-out;
+}
+
+.lightbox.open {
+    @apply visible;
+}
+
+/* Backdrop fades separately from the image animation */
+.lightbox.dim {
+    @apply bg-white/90;
+}
+
+/* Overrides the general img rule for the enlarged copy */
+.lightbox img {
+    @apply m-0 w-auto h-auto max-w-[90vw] max-h-[90vh] object-contain shadow-2xl cursor-zoom-out origin-top-left;
+}
+
+.toggle::before {
+    content: '';
+    @apply size-2.5 shrink-0;
+    background-color: rgb(157, 157, 157);
+    mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M13 0C14.6569 0 16 1.34315 16 3V13C16 14.6569 14.6569 16 13 16H3C1.34315 16 0 14.6569 0 13V3C0 1.34315 1.34315 0 3 0H13ZM7 3V7H3V9H7V13H9V9H13V7H9V3H7Z'/%3E%3C/svg%3E") center / contain no-repeat;
+}
+
+.toggle[aria-expanded='true']::before {
+    mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M13 0C14.6569 0 16 1.34315 16 3V13C16 14.6569 14.6569 16 13 16H3C1.34315 16 0 14.6569 0 13V3C0 1.34315 1.34315 0 3 0H13ZM3 7V9H13V7H3Z'/%3E%3C/svg%3E");
+}
+
+.typewriter {
+    --final: #000;
+    --speed: 0.025s;
+}
+
+.typewriter .letter {
+    display: inline-block;
+    white-space: pre;
+    animation: type-in 1s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+    animation-delay: calc(var(--i) * var(--speed));
+}
+
+@keyframes type-in {
+    0% {
+        opacity: 0;
+        color: #ff5f5f;
+    }
+
+    20% {
+        opacity: 1;
+    }
+
+    15% {
+        color: #ffd35f;
+    }
+
+    30% {
+        color: #5fff9b;
+    }
+
+    45% {
+        color: #5fb4ff;
+    }
+
+    100% {
+        opacity: 1;
+        color: var(--final);
+    }
+}
+
+.img-wrap {
+    @apply relative ml-6 mt-1 w-auto;
+}
+
+.img-wrap img {
+    @apply m-0 w-full;
+}
+
+.img-links {
+    @apply pointer-events-none absolute inset-x-0 bottom-0 z-10 flex flex-wrap gap-1 p-2;
+}
+
+.img-links a {
+    @apply pointer-events-auto rounded-md bg-black px-2 py-1 text-xs text-white no-underline;
+}
+
+/* md and up: hidden until hover */
+@media (min-width: 48rem) {
+    .img-links {
+        opacity: 0;
+        transform: translateY(2px);
+        transition: opacity 0.2s ease, transform 0.2s ease;
+    }
+
+    .img-wrap:hover .img-links,
+    .img-wrap:focus-within .img-links {
+        opacity: 1;
+        transform: none;
+    }
+}
+
+/* Iframes have no natural size: full width, 16:9 */
+.img-wrap:has(> iframe) {
+    @apply w-[calc(100%-1.5rem)];
+}
+
+.img-wrap iframe {
+    @apply m-0 block w-full h-auto aspect-video;
+}
