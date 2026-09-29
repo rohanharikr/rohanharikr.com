@@ -14,10 +14,11 @@ function makeCollapsible(listEl, depth = 0) {
 
         nested.id ||= `sublist-${uid++}`;
         nested.hidden = !START_OPEN;
+        nested.style.setProperty('--depth', depth + 1); // add: li lines inherit this
 
         const btn = document.createElement('button');
         btn.type = 'button';
-        btn.innerHTML = '<span class="w-4 border-t border-dotted border-[#ccc]"></span>';
+        btn.innerHTML = '<span class="w-4 shrink-0 border-t border-dotted border-(--line)"></span>'; // add shrink-0
         btn.append(label);
         btn.className = "toggle cursor-pointer flex items-center gap-1.5 [&>span]:order-first";
         btn.setAttribute('aria-expanded', String(START_OPEN));
@@ -101,6 +102,11 @@ document.addEventListener('keydown', e => {
     if (e.key === 'Escape') close();
 });
 
+// Close on scroll
+for (const type of ['scroll', 'wheel', 'touchmove']) {
+    window.addEventListener(type, close, { passive: true });
+}
+
 function splitLetters(el) {
     const text = el.textContent;
     el.textContent = '';
@@ -145,3 +151,17 @@ document.querySelectorAll('img, iframe').forEach(el => {
     }
     wrap.append(bar);
 });
+
+// Tabs
+const tabs = document.querySelectorAll('[role="tab"]');
+
+function selectTab(tab) {
+    for (const t of tabs) {
+        const selected = t === tab;
+        t.setAttribute('aria-selected', String(selected));
+        document.getElementById(t.getAttribute('aria-controls')).hidden = !selected;
+    }
+    close(); // in case the lightbox is open
+}
+
+tabs.forEach(t => t.addEventListener('click', () => selectTab(t)));

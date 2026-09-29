@@ -3,6 +3,7 @@
 :root {
     --bg: #fff;
     --line: #ccc;
+    --depth: 0;
 }
 
 html:not(.ready) section>ol {
@@ -31,55 +32,49 @@ p {
     @apply text-sm opacity-65;
 }
 
-ol,
-ul {
-    border-left: 1px dotted var(--line);
-}
-
-:is(ol, ul) :is(ol, ul) {
+section :is(ol, ul) :is(ol, ul) {
     @apply ml-6;
 }
 
-li {
+section li {
     @apply relative pt-2 leading-6;
 }
 
-li:last-child::after {
+/* Vertical guide: each item draws its own segment.
+   Sits just above toggles of the same depth, below toggles one level up. */
+section li::after {
     content: '';
     position: absolute;
-    left: -1px;
-    top: calc(1.25rem + 1px);
-    bottom: 0;
-    width: 1px;
-    background: var(--bg);
-}
-
-li:last-child>.toggle[aria-expanded='true']::before {
-    content: '';
-    position: absolute;
-    left: -1px;
+    left: 0;
     top: 0;
-    height: 50%;
-    width: 1px;
+    bottom: 0;
     border-left: 1px dotted var(--line);
-    background: var(--bg);
+    z-index: calc(201 - var(--depth) * 2);
+    pointer-events: none;
 }
 
-li:not(:has(> ol, > ul)) {
+/* Last item: line stops at its connector (pt-2 + half a line) */
+section li:last-child::after {
+    bottom: auto;
+    height: 1.25rem;
+}
+
+section li:not(:has(> ol, > ul)) {
     @apply flex flex-wrap items-center gap-x-2;
 }
 
-li:not(:has(> ol, > ul))::before {
+/* Horizontal connector for leaf items */
+section li:not(:has(> ol, > ul))::before {
     content: '';
-    @apply w-4;
+    @apply w-4 shrink-0;
     border-top: 1px dotted var(--line);
 }
 
-li:not(:has(> ol, > ul))>p {
+section li:not(:has(> ol, > ul))>p {
     @apply basis-full;
 }
 
-li>p {
+section li>p {
     @apply pl-6;
 }
 
@@ -89,10 +84,15 @@ li>p {
 
 .toggle {
     @apply sticky w-fit whitespace-nowrap bg-(--bg);
-    top: calc((var(--depth) + 1) * 1.5rem);
-    z-index: calc(100 - var(--depth));
+    top: calc(var(--depth) * 1.5rem);
+    z-index: calc(200 - var(--depth) * 2);
     box-shadow: 0 0 0 100vmax var(--bg);
-    clip-path: inset(0 -100vmax 0 0);
+    clip-path: inset(0 -100vmax);
+}
+
+/* Sections that still have a sticky heading: stack toggles below it */
+section:has(> h3) .toggle {
+    top: calc((var(--depth) + 1) * 1.5rem);
 }
 
 /* Collapsed buttons don't stick */
@@ -100,8 +100,18 @@ li>p {
     @apply static;
 }
 
+/* Last item's line stub scrolls away when its toggle sticks, so the toggle carries its own */
+li:last-child>.toggle[aria-expanded='true']::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    height: 50%;
+    border-left: 1px dotted var(--line);
+}
+
 section>h3 {
-    @apply sticky top-0 z-[200] flex w-full h-6 items-center gap-1 bg-(--bg);
+    @apply sticky top-0 z-[300] flex w-full h-6 items-center gap-1 bg-(--bg);
 }
 
 /* Heading only sticks when a top-level item is open */
@@ -115,7 +125,7 @@ li img {
 
 /* Hidden until opened */
 .lightbox {
-    @apply fixed inset-0 z-[300] grid place-items-center bg-transparent invisible transition-colors duration-300 cursor-zoom-out;
+    @apply fixed inset-0 z-[400] grid place-items-center bg-transparent invisible transition-colors duration-300 cursor-zoom-out;
 }
 
 .lightbox.open {
@@ -134,12 +144,13 @@ li img {
 
 .toggle::before {
     content: '';
-    @apply size-2.5 shrink-0;
+    @apply size-2.5 shrink-0 animate-bounce;
     background-color: rgb(157, 157, 157);
-    mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M13 0C14.6569 0 16 1.34315 16 3V13C16 14.6569 14.6569 16 13 16H3C1.34315 16 0 14.6569 0 13V3C0 1.34315 1.34315 0 3 0H13ZM7 3V7H3V9H7V13H9V9H13V7H9V3H7Z'/%3E%3C/svg%3E") center / contain no-repeat;
+    mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' class='animate-pulse' viewBox='0 0 16 16'%3E%3Cpath d='M13 0C14.6569 0 16 1.34315 16 3V13C16 14.6569 14.6569 16 13 16H3C1.34315 16 0 14.6569 0 13V3C0 1.34315 1.34315 0 3 0H13ZM7 3V7H3V9H7V13H9V9H13V7H9V3H7Z'/%3E%3C/svg%3E") center / contain no-repeat;
 }
 
 .toggle[aria-expanded='true']::before {
+    @apply animate-none;
     mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M13 0C14.6569 0 16 1.34315 16 3V13C16 14.6569 14.6569 16 13 16H3C1.34315 16 0 14.6569 0 13V3C0 1.34315 1.34315 0 3 0H13ZM3 7V9H13V7H3Z'/%3E%3C/svg%3E");
 }
 
@@ -161,12 +172,12 @@ li img {
         color: #ff5f5f;
     }
 
-    20% {
-        opacity: 1;
-    }
-
     15% {
         color: #ffd35f;
+    }
+
+    20% {
+        opacity: 1;
     }
 
     30% {
@@ -221,4 +232,26 @@ li img {
 
 .img-wrap iframe {
     @apply m-0 block w-full h-auto aspect-video;
+}
+
+[role="tabpanel"]:not([hidden]) {
+    animation: fade-in 0.3s ease both;
+}
+
+@keyframes fade-in {
+    from {
+        opacity: 0;
+        transform: translateY(4px);
+    }
+
+    to {
+        opacity: 1;
+        transform: none;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    [role="tabpanel"]:not([hidden]) {
+        animation: none;
+    }
 }
