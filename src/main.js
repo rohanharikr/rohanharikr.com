@@ -161,13 +161,12 @@ const SWEEP = 500;
 // Set while a reveal is in flight; calling it commits that reveal right away
 let pending = null;
 
-function commit(tab, revealed = false) {
+function commit(tab) {
     for (const t of tabs) {
         const selected = t === tab;
         const panel = panelOf(t);
         t.setAttribute('aria-selected', String(selected));
         panel.hidden = !selected;
-        panel.classList.toggle('revealed', selected && revealed);
         panel.removeAttribute('style');
     }
     document.documentElement.dataset.theme = tab.getAttribute('aria-controls');
@@ -186,18 +185,29 @@ function selectTab(tab) {
     for (const t of tabs) t.setAttribute('aria-selected', String(t === tab));
     close();
 
+    // The theme flips now, not on commit: anything themed that isn't a panel
+    // (the glass nav mixes var(--bg) into its tint) would otherwise sit a whole
+    // animation behind the reveal. Only the page background is swept, by the
+    // two layers below, so the outgoing panel carries the outgoing palette.
+    const was = document.documentElement.dataset.theme || 'work';
+    old.style.setProperty('--bg', `var(--bg-${was})`);
+    old.style.setProperty('--line', `var(--line-${was})`);
+    document.documentElement.dataset.theme = id;
+
     // The outgoing panel stays where it is; the incoming one is revealed over it
     // through a circle growing from the centre of the clicked tab. Nothing here
     // suppresses hit testing on the page itself, so the tabs stay live.
-    // It sits below .sweep (z-index -1) so the full-bleed bands its sticky
-    // toggles paint don't show through the reveal in the old colour.
+    // It sits below .sweep so the full-bleed bands its sticky toggles paint
+    // don't show through the reveal in the old colour. The incoming panel needs
+    // no z-index of its own: its clip-path already makes it a stacking context,
+    // painted as if it were z-index 0, which is above the sweep.
     old.style.pointerEvents = 'none';
     old.style.zIndex = '-2';
+    // Locked for the duration: the outgoing panel is still in the grid, so the
+    // page is taller than it will be once it's hidden, and anything scrolled to
+    // in the meantime is clamped away on commit
+    document.documentElement.style.overflow = 'hidden';
     panel.hidden = false;
-    panel.classList.add('revealed');
-    panel.style.zIndex = '1';
-    panel.style.setProperty('--bg', `var(--bg-${id})`);
-    panel.style.setProperty('--line', `var(--line-${id})`);
     panel.style.background = 'var(--bg)';
 
     const tabRect = tab.getBoundingClientRect();
@@ -208,10 +218,18 @@ function selectTab(tab) {
         Math.max(y, innerHeight - y)
     );
 
-    const layer = document.createElement('div');
-    layer.className = 'sweep';
-    layer.style.background = `var(--bg-${id})`;
-    document.body.append(layer);
+    // Two viewport layers behind the page: the outgoing colour, and the incoming
+    // one revealed over it. Both sit under the outgoing panel's own layer.
+    const sweep = (color, z) => {
+        const el = document.createElement('div');
+        el.className = 'sweep';
+        el.style.background = color;
+        if (z) el.style.zIndex = z;
+        document.body.append(el);
+        return el;
+    };
+    const under = sweep(`var(--bg-${was})`, '-3');
+    const layer = sweep(`var(--bg-${id})`);
 
     // clip-path is relative to each element's own box
     const box = panel.getBoundingClientRect();
@@ -226,11 +244,13 @@ function selectTab(tab) {
         if (pending !== done) return; // a newer reveal already took over
         pending = null;
         anims.forEach(a => a.cancel());
+        document.documentElement.style.removeProperty('overflow');
+        under.remove();
         layer.remove();
-        commit(tab, true);
+        commit(tab);
     };
     pending = done;
-    Promise.all(anims.map(a => a.finished)).then(done, () => { });
+    Promise.all(anims.map(a => a.finished)).then(done, done);
 }
 
 tabs.forEach(t => t.addEventListener('click', () => {

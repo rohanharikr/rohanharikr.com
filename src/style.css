@@ -27,6 +27,9 @@ html[data-theme="fun"] {
 
 html {
     background: var(--bg);
+    /* Reserved so locking the scroll during a tab reveal can't shift the page
+       sideways on platforms with classic scrollbars */
+    scrollbar-gutter: stable;
 }
 
 html:not(.ready) section>ol {
@@ -257,7 +260,9 @@ li img {
     @apply m-0 block w-full h-auto aspect-video;
 }
 
-[role="tabpanel"]:not([hidden]) {
+/* On the children, never the panel itself: a transform on the panel shifts its
+   clip-path reveal out of step with the .sweep layer behind it */
+[role="tabpanel"]:not([hidden])>* {
     animation: fade-in 0.3s ease both;
 }
 
@@ -274,7 +279,7 @@ li img {
 }
 
 @media (prefers-reduced-motion: reduce) {
-    [role="tabpanel"]:not([hidden]) {
+    [role="tabpanel"]:not([hidden])>* {
         animation: none;
     }
 }
@@ -289,12 +294,6 @@ li img {
     grid-area: 1 / 1;
 }
 
-/* The clip-path reveal stands in for the fade. Stays on the panel while it is
-   showing, so landing the reveal doesn't restart fade-in. */
-[role="tabpanel"].revealed {
-    animation: none;
-}
-
 /* The incoming background colour, swept across the viewport behind the page.
    Never hit-tested, so hover and clicks keep working mid-animation */
 .sweep {
@@ -305,6 +304,11 @@ li img {
 }
 
 .glass-nav {
+    /* Above the panels in both states. A panel being revealed has a clip-path,
+       which makes it a stacking context painted as if it were z-index 0 - the
+       nav's own layer - so without this its shadow lands under the panel mid
+       animation and back on top of it afterwards. */
+    z-index: 20;
     background: color-mix(in srgb, var(--bg) 35%, transparent);
     backdrop-filter: blur(14px) saturate(180%);
     -webkit-backdrop-filter: blur(14px) saturate(180%);
