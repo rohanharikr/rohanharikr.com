@@ -130,6 +130,8 @@ section li>p {
    per element, and enough of them together crash mobile Safari. */
 .toggle {
     @apply sticky w-full whitespace-nowrap bg-(--bg);
+    /* full width for the band, but the empty half of the row isn't the button */
+    pointer-events: none;
     top: calc(var(--depth) * 1.5rem);
     z-index: calc(200 - var(--depth) * 2);
 }
@@ -160,6 +162,11 @@ section li>p {
    the button's utility classes */
 .toggle .label {
     order: 1;
+    pointer-events: auto;
+}
+
+.toggle::before {
+    pointer-events: auto;
 }
 
 /* A ring pinging out from behind the + icon, rather than on it: ping fades
@@ -180,7 +187,9 @@ section li>p {
     }
 }
 
-/* Last item's line stub scrolls away when its toggle sticks, so the toggle carries its own */
+/* Last item's line stub scrolls away when its header sticks, so the header
+   carries its own */
+li:last-child>.leaf::after,
 li:last-child>.toggle[aria-expanded='true']::after {
     content: '';
     position: absolute;
@@ -481,10 +490,16 @@ iframe.pending {
     transform: none;
 }
 
-/* An entry with no description still reserves some of the space one would have
-   taken, so removing the text doesn't collapse the list's rhythm */
-#work li:not(:has(> p, > ol, > ul)) {
+/* Education entries have no description, so they reserve some of the space one
+   would have taken. Scoped to that list: items elsewhere without a description
+   should keep the same rhythm as their siblings. */
+#work>ol:last-child>li:not(:has(> p, > ol, > ul)) {
     padding-bottom: 1.5rem;
+}
+
+/* A little more air between roles than between the items within one */
+#work>ol:first-child>li+li {
+    margin-top: 1rem;
 }
 
 /* Dates hang in the margin outside the column, leaving the tree where it is.
