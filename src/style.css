@@ -80,7 +80,11 @@ section :is(ol, ul) :is(ol, ul) {
 }
 
 section li {
-    @apply relative pt-2 leading-6;
+    @apply relative leading-6;
+    /* named, so the last item's line stub can reach the connector whatever the
+       item's own padding is */
+    --pad: 0.5rem;
+    padding-top: var(--pad);
 }
 
 /* Vertical guide: each item draws its own segment.
@@ -96,10 +100,10 @@ section li::after {
     pointer-events: none;
 }
 
-/* Last item: line stops at its connector (pt-2 + half a line) */
+/* Last item: line stops at its connector, half a line into the text */
 section li:last-child::after {
     bottom: auto;
-    height: 1.25rem;
+    height: calc(var(--pad) + 0.75rem);
 }
 
 section li:not(:has(> ol, > ul)) {
@@ -501,7 +505,7 @@ iframe.pending {
    rather than margin: the guide line is drawn inside the item's box, so a
    margin would leave a break in it. */
 #work>ol:first-child>li+li {
-    padding-top: 1.5rem;
+    --pad: 1.5rem;
 }
 
 /* Dates hang in the margin outside the column, leaving the tree where it is.
