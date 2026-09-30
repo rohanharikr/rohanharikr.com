@@ -80,7 +80,7 @@ section :is(ol, ul) :is(ol, ul) {
 }
 
 section li {
-    @apply relative pt-3 leading-6;
+    @apply relative pt-2 leading-6;
 }
 
 /* Vertical guide: each item draws its own segment.
