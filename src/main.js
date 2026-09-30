@@ -153,51 +153,89 @@ document.querySelectorAll('img, iframe').forEach(el => {
 });
 
 // Tabs
-const tabs = document.querySelectorAll('[role="tab"]');
+const tabs = [...document.querySelectorAll('[role="tab"]')];
+const panelOf = tab => document.getElementById(tab.getAttribute('aria-controls'));
 const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)');
+const SWEEP = 500;
+
+// Set while a reveal is in flight; calling it commits that reveal right away
+let pending = null;
+
+function commit(tab, revealed = false) {
+    for (const t of tabs) {
+        const selected = t === tab;
+        const panel = panelOf(t);
+        t.setAttribute('aria-selected', String(selected));
+        panel.hidden = !selected;
+        panel.classList.toggle('revealed', selected && revealed);
+        panel.removeAttribute('style');
+    }
+    document.documentElement.dataset.theme = tab.getAttribute('aria-controls');
+    close(); // in case the lightbox is open
+}
 
 function selectTab(tab) {
+    pending?.(); // land the reveal in flight, so clicks can be spammed
+    const from = tabs.find(t => t.getAttribute('aria-selected') === 'true');
     const id = tab.getAttribute('aria-controls');
+    const panel = panelOf(tab);
+    const old = from && panelOf(from);
 
-    const apply = () => {
-        for (const t of tabs) {
-            const selected = t === tab;
-            t.setAttribute('aria-selected', String(selected));
-            document.getElementById(t.getAttribute('aria-controls')).hidden = !selected;
-        }
-        document.documentElement.dataset.theme = id;
-        close(); // in case the lightbox is open
-    };
+    if (!old || old === panel || reduceMotion.matches) return commit(tab);
 
-    if (!document.startViewTransition || reduceMotion.matches) return apply();
+    for (const t of tabs) t.setAttribute('aria-selected', String(t === tab));
+    close();
 
-    // Circle starts at the center of the clicked tab
-    const rect = tab.getBoundingClientRect();
-    const x = rect.left + rect.width / 2;
-    const y = rect.top + rect.height / 2;
+    // The outgoing panel stays where it is; the incoming one is revealed over it
+    // through a circle growing from the centre of the clicked tab. Nothing here
+    // suppresses hit testing on the page itself, so the tabs stay live.
+    // It sits below .sweep (z-index -1) so the full-bleed bands its sticky
+    // toggles paint don't show through the reveal in the old colour.
+    old.style.pointerEvents = 'none';
+    old.style.zIndex = '-2';
+    panel.hidden = false;
+    panel.classList.add('revealed');
+    panel.style.zIndex = '1';
+    panel.style.setProperty('--bg', `var(--bg-${id})`);
+    panel.style.setProperty('--line', `var(--line-${id})`);
+    panel.style.background = 'var(--bg)';
+
+    const tabRect = tab.getBoundingClientRect();
+    const x = tabRect.left + tabRect.width / 2;
+    const y = tabRect.top + tabRect.height / 2;
     const radius = Math.hypot(
         Math.max(x, innerWidth - x),
         Math.max(y, innerHeight - y)
     );
 
-    document.startViewTransition(apply).ready.then(() => {
-        document.documentElement.animate(
-            {
-                clipPath: [
-                    `circle(0px at ${x}px ${y}px)`,
-                    `circle(${radius}px at ${x}px ${y}px)`,
-                ],
-            },
-            {
-                duration: 600,
-                easing: 'cubic-bezier(0.4, 0, 0.2, 1)',
-                pseudoElement: '::view-transition-new(root)',
-            }
-        );
-    });
+    const layer = document.createElement('div');
+    layer.className = 'sweep';
+    layer.style.background = `var(--bg-${id})`;
+    document.body.append(layer);
+
+    // clip-path is relative to each element's own box
+    const box = panel.getBoundingClientRect();
+    const circle = (r, ox = 0, oy = 0) => `circle(${r}px at ${x - ox}px ${y - oy}px)`;
+    const opts = { duration: SWEEP, easing: 'cubic-bezier(0.4, 0, 0.2, 1)', fill: 'both' };
+    const anims = [
+        panel.animate({ clipPath: [circle(0, box.left, box.top), circle(radius, box.left, box.top)] }, opts),
+        layer.animate({ clipPath: [circle(0), circle(radius)] }, opts),
+    ];
+
+    const done = () => {
+        if (pending !== done) return; // a newer reveal already took over
+        pending = null;
+        anims.forEach(a => a.cancel());
+        layer.remove();
+        commit(tab, true);
+    };
+    pending = done;
+    Promise.all(anims.map(a => a.finished)).then(done, () => { });
 }
 
 tabs.forEach(t => t.addEventListener('click', () => {
-    if (t.getAttribute('aria-selected') === 'true') return; // no animation on the active tab
+    // The active tab is a no-op, double clicks included: aria-selected moves at
+    // the start of a reveal, so a repeat click can't cut its own animation short
+    if (t.getAttribute('aria-selected') === 'true') return;
     selectTab(t);
 }));
