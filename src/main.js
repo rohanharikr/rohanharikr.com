@@ -19,7 +19,10 @@ function makeCollapsible(listEl, depth = 0) {
         const btn = document.createElement('button');
         btn.type = 'button';
         btn.innerHTML = '<span class="w-4 shrink-0 border-t border-dotted border-(--line)"></span>'; // add shrink-0
-        btn.append(label);
+        const text = document.createElement('span');
+        text.className = 'label';
+        text.textContent = label;
+        btn.append(text); // its own element, so it can nudge without the connector
         btn.className = "toggle cursor-pointer flex items-center gap-1.5 [&>span]:order-first";
         btn.setAttribute('aria-expanded', String(START_OPEN));
         btn.setAttribute('aria-controls', nested.id);
@@ -178,10 +181,12 @@ const tabs = [...document.querySelectorAll('[role="tab"]')];
 document.querySelectorAll('[role="tabpanel"][hidden] iframe[src]').forEach(frame => {
     frame.dataset.src = frame.src;
     frame.removeAttribute('src');
+    frame.classList.add('pending'); // a placeholder until the player paints
 });
 
 function loadEmbeds(panel) {
     for (const frame of panel.querySelectorAll('iframe[data-src]')) {
+        frame.addEventListener('load', () => frame.classList.remove('pending'), { once: true });
         frame.src = frame.dataset.src;
         delete frame.dataset.src;
     }

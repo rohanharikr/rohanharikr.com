@@ -162,6 +162,31 @@ section:has(> h3) .toggle {
     top: auto;
 }
 
+/* After the icon: the connector span and the label both get order-first from
+   the button's utility classes */
+.toggle .label {
+    order: 1;
+}
+
+/* A ring pinging out from behind the + icon. Sits over it rather than on it,
+   since ping scales to 2x and fades to nothing - the icon itself has to stay.
+   Positioned past the connector (w-4) and the button's gap-1.5. */
+.toggle[aria-expanded='false']::after {
+    content: '';
+    @apply animate-ping pointer-events-none absolute size-2.5 rounded-full;
+    left: 1.375rem;
+    top: 50%;
+    margin-top: -0.3125rem;
+    background-color: rgb(157, 157, 157);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .toggle[aria-expanded='false']::after {
+        animation: none;
+        opacity: 0;
+    }
+}
+
 /* Last item's line stub scrolls away when its toggle sticks, so the toggle carries its own */
 li:last-child>.toggle[aria-expanded='true']::after {
     content: '';
@@ -206,7 +231,7 @@ li img {
 
 .toggle::before {
     content: '';
-    @apply size-2.5 shrink-0 animate-bounce;
+    @apply size-2.5 shrink-0;
     background-color: rgb(157, 157, 157);
     mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' class='animate-pulse' viewBox='0 0 16 16'%3E%3Cpath d='M13 0C14.6569 0 16 1.34315 16 3V13C16 14.6569 14.6569 16 13 16H3C1.34315 16 0 14.6569 0 13V3C0 1.34315 1.34315 0 3 0H13ZM7 3V7H3V9H7V13H9V9H13V7H9V3H7Z'/%3E%3C/svg%3E") center / contain no-repeat;
 }
@@ -425,6 +450,13 @@ li img {
     flex: none;
     -webkit-line-clamp: none;
     line-clamp: none;
+}
+
+/* Until the player paints, the iframe is transparent - so a background on it
+   is the placeholder, and pulsing its opacity costs nothing once it's opaque */
+iframe.pending {
+    @apply animate-pulse;
+    background-color: color-mix(in srgb, var(--line) 30%, var(--bg));
 }
 
 /* main.js wraps media carrying link-* attributes, so the flex item is either
