@@ -330,3 +330,100 @@ li img {
     background: var(--bg);
     box-shadow: 0 1px 2px rgb(0 0 0 / 0.08);
 }
+
+/* Fun: a bento grid rather than the roadmap tree. Tile sizes come from the
+   col-span / row-span utilities in the markup, so they stay out of here. */
+#fun>ol {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    /* Rows size to their content, so a tile is exactly as tall as what's in it.
+       Tiles sharing a row still stretch to match the tallest. */
+    grid-auto-rows: auto;
+    gap: 0.75rem;
+}
+
+@media (min-width: 48rem) {
+    #fun>ol {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+}
+
+#fun li {
+    display: flex;
+    flex-direction: column;
+    flex-wrap: nowrap;
+    align-items: stretch;
+    padding: 0.75rem;
+    overflow: hidden;
+    border: 1px solid var(--line);
+    border-radius: 0.5rem;
+    background: color-mix(in srgb, var(--line) 12%, var(--bg));
+}
+
+/* The tree's connectors and guide lines don't belong in a grid */
+#fun li::before,
+#fun li::after {
+    content: none;
+}
+
+/* Type is left alone: the title inherits the li's size and the description
+   keeps the text-sm / 65% the rest of the page gives every <p> */
+#fun li>p {
+    flex: 1;
+    min-height: 0;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+    line-clamp: 3;
+}
+
+/* On a tile with an embed the text is a caption, not the content */
+#fun li:has(iframe)>p {
+    flex: none;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+}
+
+/* main.js wraps media carrying link-* attributes, so the flex item is either
+   the embed itself or that wrapper. mt-1 is the step the tree uses here. */
+#fun li>iframe,
+#fun li>.img-wrap {
+    flex: none;
+    width: 100%;
+    /* mt-1, the same step the tree puts between a description and its media.
+       The embed holds 16:9 rather than stretching, so whatever height the tile
+       has spare falls at the bottom, where it reads as padding. */
+    margin: 0.25rem 0 0;
+}
+
+/* The wrapper stacks the embed above its links instead of over them: the
+   overlay is unreadable at this size */
+#fun li>.img-wrap {
+    display: flex;
+    flex-direction: column;
+}
+
+#fun li iframe {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 16 / 9;
+    border: 0;
+    border-radius: 0.25rem;
+}
+
+#fun li .img-wrap>iframe {
+    flex: none;
+    margin: 0;
+}
+
+/* In flow under the embed, and always visible - no hover reveal */
+#fun li .img-links {
+    position: static;
+    margin-top: 0.25rem;
+    padding: 0;
+    opacity: 1;
+    transform: none;
+}

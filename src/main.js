@@ -154,6 +154,22 @@ document.querySelectorAll('img, iframe').forEach(el => {
 
 // Tabs
 const tabs = [...document.querySelectorAll('[role="tab"]')];
+
+// A hidden panel gives its embeds a 0x0 box, and Chrome loads hidden iframes
+// eagerly whatever loading="lazy" says - so YouTube measures nothing, picks its
+// smallest poster and never upgrades. Hold the src back until the panel is
+// shown and it measures the real player instead.
+document.querySelectorAll('[role="tabpanel"][hidden] iframe[src]').forEach(frame => {
+    frame.dataset.src = frame.src;
+    frame.removeAttribute('src');
+});
+
+function loadEmbeds(panel) {
+    for (const frame of panel.querySelectorAll('iframe[data-src]')) {
+        frame.src = frame.dataset.src;
+        delete frame.dataset.src;
+    }
+}
 const panelOf = tab => document.getElementById(tab.getAttribute('aria-controls'));
 const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)');
 const SWEEP = 500;
@@ -168,6 +184,7 @@ function commit(tab) {
         t.setAttribute('aria-selected', String(selected));
         panel.hidden = !selected;
         panel.removeAttribute('style');
+        if (selected) loadEmbeds(panel);
     }
     document.documentElement.dataset.theme = tab.getAttribute('aria-controls');
     close(); // in case the lightbox is open
@@ -203,6 +220,7 @@ function selectTab(tab) {
     // painted as if it were z-index 0, which is above the sweep.
     old.style.pointerEvents = 'none';
     old.style.zIndex = '-2';
+    loadEmbeds(panel);
     // Locked for the duration: the outgoing panel is still in the grid, so the
     // page is taller than it will be once it's hidden, and anything scrolled to
     // in the meantime is clamped away on commit
