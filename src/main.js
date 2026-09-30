@@ -14,15 +14,15 @@ function makeCollapsible(listEl, depth = 0) {
 
         nested.id ||= `sublist-${uid++}`;
         nested.hidden = !START_OPEN;
-        nested.style.setProperty('--depth', depth + 1); // add: li lines inherit this
+        nested.style.setProperty('--depth', depth + 1); // the li guide lines inherit this
 
         const btn = document.createElement('button');
         btn.type = 'button';
-        btn.innerHTML = '<span class="w-4 shrink-0 border-t border-dotted border-(--line)"></span>'; // add shrink-0
+        btn.innerHTML = '<span class="w-4 shrink-0 border-t border-dotted border-(--line)"></span>';
         const text = document.createElement('span');
         text.className = 'label';
         text.textContent = label;
-        btn.append(text); // its own element, so it can nudge without the connector
+        btn.append(text); // its own element, so it can animate without the connector
         btn.className = "toggle cursor-pointer flex items-center gap-1.5 [&>span]:order-first";
         btn.setAttribute('aria-expanded', String(START_OPEN));
         btn.setAttribute('aria-controls', nested.id);

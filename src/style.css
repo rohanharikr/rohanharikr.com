@@ -62,10 +62,9 @@ p {
    out in the margin on wide viewports. */
 .date {
     @apply text-xs opacity-65;
-    /* Its own line under the title while it sits inline, indented to the same
-       pl-6 the description uses. Both ignored once it's out in the margin.
-       Block, so it uses its own line box rather than inheriting the li's
-       leading-6 strut - that's what made the gap uneven between entries. */
+    /* Its own line under the title while it sits inline, indented to the
+       description's pl-6. Block, so it doesn't inherit the li's leading-6
+       strut, which made the gap uneven between entries. */
     display: block;
     flex-basis: 100%;
     padding-left: 1.5rem;
@@ -81,7 +80,7 @@ section :is(ol, ul) :is(ol, ul) {
 }
 
 section li {
-    @apply relative pt-2 leading-6;
+    @apply relative pt-3 leading-6;
 }
 
 /* Vertical guide: each item draws its own segment.
@@ -126,26 +125,21 @@ section li>p {
     display: none !important;
 }
 
+/* Full width rather than a 100vmax box-shadow: the shadow masked scrolling
+   content just as well, but its paint area ran to thousands of pixels square
+   per element, and enough of them together crash mobile Safari. */
 .toggle {
-    @apply sticky w-fit whitespace-nowrap bg-(--bg);
+    @apply sticky w-full whitespace-nowrap bg-(--bg);
     top: calc(var(--depth) * 1.5rem);
     z-index: calc(200 - var(--depth) * 2);
-    box-shadow: 0 0 0 100vmax var(--bg);
-    clip-path: inset(0 -100vmax);
 }
 
-/* Sections that still have a sticky heading: stack toggles below it */
-section:has(> h3) .toggle {
-    top: calc((var(--depth) + 1) * 1.5rem);
-}
 
 /* End nodes stick like the toggles above them, carrying their own connector */
 .leaf {
-    @apply sticky w-fit flex items-center gap-2 whitespace-nowrap bg-(--bg);
+    @apply sticky w-full flex items-center gap-2 whitespace-nowrap bg-(--bg);
     top: calc(var(--depth) * 1.5rem);
     z-index: calc(200 - var(--depth) * 2);
-    box-shadow: 0 0 0 100vmax var(--bg);
-    clip-path: inset(0 -100vmax);
 }
 
 .leaf::before {
@@ -168,9 +162,8 @@ section:has(> h3) .toggle {
     order: 1;
 }
 
-/* A ring pinging out from behind the + icon. Sits over it rather than on it,
-   since ping scales to 2x and fades to nothing - the icon itself has to stay.
-   Positioned past the connector (w-4) and the button's gap-1.5. */
+/* A ring pinging out from behind the + icon, rather than on it: ping fades
+   whatever carries it to nothing. Offset past the connector and the gap. */
 .toggle[aria-expanded='false']::after {
     content: '';
     @apply animate-ping pointer-events-none absolute size-2.5 rounded-full;
@@ -197,18 +190,7 @@ li:last-child>.toggle[aria-expanded='true']::after {
     border-left: 1px dotted var(--line);
 }
 
-section>h3 {
-    @apply sticky top-0 z-[300] flex w-full h-6 items-center gap-1 bg-(--bg);
-}
 
-/* Heading only sticks when a top-level item is open */
-section:not(:has(> ol > li > .toggle[aria-expanded='true']))>h3 {
-    @apply static;
-}
-
-li img {
-    @apply cursor-zoom-in;
-}
 
 /* Hidden until opened */
 .lightbox {
@@ -369,10 +351,8 @@ li img {
 /* Flat segmented control: a recessed track with the active tab raised out of
    it. Both colours are mixed from the live theme, so the bar follows the tab. */
 .tabs {
-    /* Above the panels in both states. A panel being revealed has a clip-path,
-       which makes it a stacking context painted as if it were z-index 0 - the
-       nav's own layer - so without this its shadow lands under the panel mid
-       animation and back on top of it afterwards. */
+    /* Above the panels in both states: a panel being revealed has a clip-path,
+       which paints it as if it were z-index 0, the nav's own layer. */
     z-index: 20;
     background: color-mix(in srgb, var(--line) 22%, var(--bg));
     border: 1px solid var(--line);
@@ -467,8 +447,7 @@ iframe.pending {
     flex: none;
     width: 100%;
     /* Pinned to the foot of the tile, so two tiles sharing a row line their
-       embeds and links up even when one caption runs longer than the other.
-       Rows size to content, so the only slack here is that difference. */
+       embeds and links up whatever length their captions run to. */
     margin: auto 0 0;
 }
 
@@ -508,9 +487,8 @@ iframe.pending {
     padding-bottom: 1.5rem;
 }
 
-/* Dates hang in the margin outside the max-w-3xl column, so the tree and its
-   guide lines stay exactly where they are. Only once the viewport is wide
-   enough to have margin to spare - below that they stay inline. */
+/* Dates hang in the margin outside the column, leaving the tree where it is.
+   Only once the viewport is wide enough to have margin to spare. */
 @media (min-width: 64rem) {
     #work .date {
         position: absolute;
