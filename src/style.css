@@ -342,18 +342,6 @@ li:last-child>.toggle[aria-expanded='true']::after {
    while the incoming one is revealed over it */
 .panels {
     display: grid;
-    position: relative;
-}
-
-/* Laid out, so embeds inside measure a real box, but out of flow and unpainted
-   so the page neither grows to fit it nor shows it */
-[role="tabpanel"].preload {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    visibility: hidden;
-    pointer-events: none;
 }
 
 .panels>[role="tabpanel"] {
