@@ -342,6 +342,18 @@ li:last-child>.toggle[aria-expanded='true']::after {
    while the incoming one is revealed over it */
 .panels {
     display: grid;
+    position: relative;
+}
+
+/* Laid out, so embeds inside measure a real box, but out of flow and unpainted
+   so the page neither grows to fit it nor shows it */
+[role="tabpanel"].preload {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    visibility: hidden;
+    pointer-events: none;
 }
 
 .panels>[role="tabpanel"] {
@@ -497,9 +509,11 @@ iframe.pending {
     padding-bottom: 1.5rem;
 }
 
-/* A little more air between roles than between the items within one */
+/* A little more air between roles than between the items within one. Padding
+   rather than margin: the guide line is drawn inside the item's box, so a
+   margin would leave a break in it. */
 #work>ol:first-child>li+li {
-    margin-top: 1rem;
+    padding-top: 1.5rem;
 }
 
 /* Dates hang in the margin outside the column, leaving the tree where it is.

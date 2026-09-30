@@ -185,12 +185,45 @@ document.querySelectorAll('[role="tabpanel"][hidden] iframe[src]').forEach(frame
 });
 
 function loadEmbeds(panel) {
+    panel.classList.remove('preload');
     for (const frame of panel.querySelectorAll('iframe[data-src]')) {
         frame.addEventListener('load', () => frame.classList.remove('pending'), { once: true });
         frame.src = frame.dataset.src;
         delete frame.dataset.src;
     }
 }
+
+// So a tab switch has nothing left to wait for, the players load up front in
+// their panels laid out but not painted: they measure a real box and pick a
+// full-size poster, while the page keeps the height of the panel on show. Runs
+// once the page itself is done, since this is several players' worth of network.
+function preloadEmbeds() {
+    for (const panel of document.querySelectorAll('[role="tabpanel"][hidden]')) {
+        const frames = [...panel.querySelectorAll('iframe[data-src]')];
+        if (!frames.length) continue;
+
+        panel.hidden = false;
+        panel.classList.add('preload');
+        for (const frame of frames) {
+            frame.src = frame.dataset.src;
+            delete frame.dataset.src;
+        }
+
+        const settled = frames.map(frame => new Promise(done => {
+            frame.addEventListener('load', done, { once: true });
+            frame.addEventListener('error', done, { once: true });
+        }));
+        Promise.all(settled).then(() => {
+            // the tab may have been opened while these were loading
+            if (!panel.classList.contains('preload')) return;
+            panel.classList.remove('preload');
+            panel.hidden = true;
+            frames.forEach(frame => frame.classList.remove('pending'));
+        });
+    }
+}
+
+addEventListener('load', () => requestAnimationFrame(preloadEmbeds));
 const panelOf = tab => document.getElementById(tab.getAttribute('aria-controls'));
 const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)');
 const SWEEP = 500;
@@ -203,7 +236,8 @@ function commit(tab) {
         const selected = t === tab;
         const panel = panelOf(t);
         t.setAttribute('aria-selected', String(selected));
-        panel.hidden = !selected;
+        // a panel still preloading stays laid out; it hides itself when done
+        panel.hidden = !selected && !panel.classList.contains('preload');
         panel.removeAttribute('style');
         if (selected) loadEmbeds(panel);
     }
