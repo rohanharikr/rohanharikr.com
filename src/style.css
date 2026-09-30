@@ -303,32 +303,30 @@ li img {
     pointer-events: none;
 }
 
-.glass-nav {
+/* Flat segmented control: a recessed track with the active tab raised out of
+   it. Both colours are mixed from the live theme, so the bar follows the tab. */
+.tabs {
     /* Above the panels in both states. A panel being revealed has a clip-path,
        which makes it a stacking context painted as if it were z-index 0 - the
        nav's own layer - so without this its shadow lands under the panel mid
        animation and back on top of it afterwards. */
     z-index: 20;
-    background: color-mix(in srgb, var(--bg) 35%, transparent);
-    backdrop-filter: blur(14px) saturate(180%);
-    -webkit-backdrop-filter: blur(14px) saturate(180%);
-    border: 1px solid rgb(255 255 255 / 0.6);
-    box-shadow:
-        inset 0 1px 0 rgb(255 255 255 / 0.9),
-        inset 0 -1px 1px rgb(0 0 0 / 0.04),
-        0 8px 24px rgb(0 0 0 / 0.08),
-        0 2px 6px rgb(0 0 0 / 0.06);
+    background: color-mix(in srgb, var(--line) 22%, var(--bg));
+    border: 1px solid var(--line);
 }
 
-.glass-nav::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    border-radius: inherit;
-    background: linear-gradient(to bottom, rgb(255 255 255 / 0.45), transparent 55%);
-    pointer-events: none;
+.tabs [role="tab"] {
+    transition: background-color 0.2s ease, box-shadow 0.2s ease;
 }
 
-.glass-nav ul {
-    position: relative;
+@media (hover: hover) {
+    .tabs [role="tab"]:hover {
+        background: color-mix(in srgb, var(--line) 30%, var(--bg));
+    }
+}
+
+/* Last, so it also wins on hover */
+.tabs [role="tab"][aria-selected="true"] {
+    background: var(--bg);
+    box-shadow: 0 1px 2px rgb(0 0 0 / 0.08);
 }

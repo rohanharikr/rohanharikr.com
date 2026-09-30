@@ -186,7 +186,7 @@ function selectTab(tab) {
     close();
 
     // The theme flips now, not on commit: anything themed that isn't a panel
-    // (the glass nav mixes var(--bg) into its tint) would otherwise sit a whole
+    // (the tab bar mixes var(--line) and var(--bg)) would otherwise sit a whole
     // animation behind the reveal. Only the page background is swept, by the
     // two layers below, so the outgoing panel carries the outgoing palette.
     const was = document.documentElement.dataset.theme || 'work';
