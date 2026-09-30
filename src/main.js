@@ -38,6 +38,22 @@ function makeCollapsible(listEl, depth = 0) {
 
 document.querySelectorAll('ol:not(li ol)').forEach(ol => makeCollapsible(ol));
 
+// End nodes stick too, at their own depth. Their label is a bare text node, so
+// it needs wrapping before it can be positioned - the depth comes down from the
+// list they sit in, the same value the toggles use.
+for (const li of document.querySelectorAll('#work li:not(:has(> ol, > ul))')) {
+    const textNodes = [...li.childNodes].filter(
+        n => n.nodeType === Node.TEXT_NODE && n.textContent.trim()
+    );
+    if (!textNodes.length) continue;
+
+    const leaf = document.createElement('span');
+    leaf.className = 'leaf';
+    leaf.textContent = textNodes.map(n => n.textContent.trim()).join(' ');
+    textNodes.forEach(n => n.remove());
+    li.prepend(leaf);
+}
+
 const lightbox = document.createElement('div');
 lightbox.className = 'lightbox';
 const bigImg = document.createElement('img');
@@ -196,6 +212,13 @@ function selectTab(tab) {
     const id = tab.getAttribute('aria-controls');
     const panel = panelOf(tab);
     const old = from && panelOf(from);
+
+    // Which way the content enters: towards a later tab, it comes in from the
+    // right. Kept on the root so commit() clearing the panel's inline styles
+    // can't pull it out from under a running animation.
+    const dir = Math.sign(tabs.indexOf(tab) - tabs.indexOf(from));
+    document.documentElement.style.setProperty('--slide', `${dir * 12}px`);
+    document.documentElement.style.setProperty('--rise', '0px');
 
     if (!old || old === panel || reduceMotion.matches) return commit(tab);
 

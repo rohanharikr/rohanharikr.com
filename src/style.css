@@ -58,6 +58,24 @@ p {
     @apply text-sm opacity-65;
 }
 
+/* Ahead of the title wherever it sits inline. Ignored once it's positioned
+   out in the margin on wide viewports. */
+.date {
+    @apply text-xs opacity-65;
+    /* Its own line under the title while it sits inline, indented to the same
+       pl-6 the description uses. Both ignored once it's out in the margin.
+       Block, so it uses its own line box rather than inheriting the li's
+       leading-6 strut - that's what made the gap uneven between entries. */
+    display: block;
+    flex-basis: 100%;
+    padding-left: 1.5rem;
+}
+
+/* Inline behind the date on that one line, stacked under it in the margin */
+.place::before {
+    content: ' · ';
+}
+
 section :is(ol, ul) :is(ol, ul) {
     @apply ml-6;
 }
@@ -90,7 +108,7 @@ section li:not(:has(> ol, > ul)) {
 }
 
 /* Horizontal connector for leaf items */
-section li:not(:has(> ol, > ul))::before {
+section li:not(:has(> ol, > ul, > .leaf))::before {
     content: '';
     @apply w-4 shrink-0;
     border-top: 1px dotted var(--line);
@@ -121,9 +139,27 @@ section:has(> h3) .toggle {
     top: calc((var(--depth) + 1) * 1.5rem);
 }
 
-/* Collapsed buttons don't stick */
+/* End nodes stick like the toggles above them, carrying their own connector */
+.leaf {
+    @apply sticky w-fit flex items-center gap-2 whitespace-nowrap bg-(--bg);
+    top: calc(var(--depth) * 1.5rem);
+    z-index: calc(200 - var(--depth) * 2);
+    box-shadow: 0 0 0 100vmax var(--bg);
+    clip-path: inset(0 -100vmax);
+}
+
+.leaf::before {
+    content: '';
+    @apply w-4 shrink-0;
+    border-top: 1px dotted var(--line);
+}
+
+/* Collapsed buttons don't stick, but stay a containing block so the date
+   hanging off them keeps the same anchor in both states */
 .toggle[aria-expanded='false'] {
-    @apply static;
+    @apply relative;
+    /* the sticky offset would otherwise shift it down by its depth */
+    top: auto;
 }
 
 /* Last item's line stub scrolls away when its toggle sticks, so the toggle carries its own */
@@ -269,7 +305,9 @@ li img {
 @keyframes fade-in {
     from {
         opacity: 0;
-        transform: translateY(4px);
+        /* JS sets --slide per switch, so content enters from the side of the
+           tab that was clicked. The rise is the fallback, for first paint. */
+        transform: translate(var(--slide, 0), var(--rise, 4px));
     }
 
     to {
@@ -331,9 +369,9 @@ li img {
     box-shadow: 0 1px 2px rgb(0 0 0 / 0.08);
 }
 
-/* Fun: a bento grid rather than the roadmap tree. Tile sizes come from the
+/* Play and Fun: bento grids rather than the roadmap tree. Tile sizes come from the
    col-span / row-span utilities in the markup, so they stay out of here. */
-#fun>ol {
+:is(#play, #fun)>ol {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     /* Rows size to their content, so a tile is exactly as tall as what's in it.
@@ -343,12 +381,12 @@ li img {
 }
 
 @media (min-width: 48rem) {
-    #fun>ol {
+    :is(#play, #fun)>ol {
         grid-template-columns: repeat(4, minmax(0, 1fr));
     }
 }
 
-#fun li {
+:is(#play, #fun) li {
     display: flex;
     flex-direction: column;
     flex-wrap: nowrap;
@@ -361,17 +399,18 @@ li img {
 }
 
 /* The tree's connectors and guide lines don't belong in a grid */
-#fun li::before,
-#fun li::after {
+:is(#play, #fun) li::before,
+:is(#play, #fun) li::after {
     content: none;
 }
 
 /* Type is left alone: the title inherits the li's size and the description
    keeps the text-sm / 65% the rest of the page gives every <p> */
-#fun li>p {
+:is(#play, #fun) li>p {
     flex: 1;
     min-height: 0;
-    margin: 0;
+    /* mt-1's worth of clearance for whatever media follows */
+    margin: 0 0 0.25rem;
     padding: 0;
     overflow: hidden;
     display: -webkit-box;
@@ -380,50 +419,89 @@ li img {
     line-clamp: 3;
 }
 
-/* On a tile with an embed the text is a caption, not the content */
-#fun li:has(iframe)>p {
+/* On a tile with media the text is a caption: it doesn't stretch to fill, but
+   it runs as long as it needs - rows size to content, so the tile follows */
+:is(#play, #fun) li:has(iframe, img)>p {
     flex: none;
-    -webkit-line-clamp: 2;
-    line-clamp: 2;
+    -webkit-line-clamp: none;
+    line-clamp: none;
 }
 
 /* main.js wraps media carrying link-* attributes, so the flex item is either
    the embed itself or that wrapper. mt-1 is the step the tree uses here. */
-#fun li>iframe,
-#fun li>.img-wrap {
+:is(#play, #fun) li>iframe,
+:is(#play, #fun) li>img,
+:is(#play, #fun) li>.img-wrap {
     flex: none;
     width: 100%;
-    /* mt-1, the same step the tree puts between a description and its media.
-       The embed holds 16:9 rather than stretching, so whatever height the tile
-       has spare falls at the bottom, where it reads as padding. */
-    margin: 0.25rem 0 0;
+    /* Pinned to the foot of the tile, so two tiles sharing a row line their
+       embeds and links up even when one caption runs longer than the other.
+       Rows size to content, so the only slack here is that difference. */
+    margin: auto 0 0;
 }
 
 /* The wrapper stacks the embed above its links instead of over them: the
    overlay is unreadable at this size */
-#fun li>.img-wrap {
+:is(#play, #fun) li>.img-wrap {
     display: flex;
     flex-direction: column;
 }
 
-#fun li iframe {
+:is(#play, #fun) li :is(iframe, img) {
     width: 100%;
     height: auto;
     aspect-ratio: 16 / 9;
+    object-fit: cover;
     border: 0;
     border-radius: 0.25rem;
 }
 
-#fun li .img-wrap>iframe {
+:is(#play, #fun) li .img-wrap>:is(iframe, img) {
     flex: none;
     margin: 0;
 }
 
 /* In flow under the embed, and always visible - no hover reveal */
-#fun li .img-links {
+:is(#play, #fun) li .img-links {
     position: static;
     margin-top: 0.25rem;
     padding: 0;
     opacity: 1;
     transform: none;
+}
+
+/* An entry with no description still reserves some of the space one would have
+   taken, so removing the text doesn't collapse the list's rhythm */
+#work li:not(:has(> p, > ol, > ul)) {
+    padding-bottom: 1.5rem;
+}
+
+/* Dates hang in the margin outside the max-w-3xl column, so the tree and its
+   guide lines stay exactly where they are. Only once the viewport is wide
+   enough to have margin to spare - below that they stay inline. */
+@media (min-width: 64rem) {
+    #work .date {
+        position: absolute;
+        right: calc(100% + 1rem);
+        text-align: right;
+        white-space: nowrap;
+    }
+
+    /* Anchored to the li, which is always relative - and, unlike the toggle,
+       never clips its subtree. pt-2 plus half the difference between the li's
+       leading-6 and text-xs's line box puts it on the title's baseline. */
+    .place {
+        display: block;
+    }
+
+    .place::before {
+        content: none;
+    }
+
+    #work li>.date {
+        top: 0.75rem;
+        padding-left: 0;
+        /* over the toggles' full-bleed bands, which top out at 201 */
+        z-index: 210;
+    }
 }
