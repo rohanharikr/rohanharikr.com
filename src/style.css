@@ -198,8 +198,10 @@ li:last-child>.toggle[aria-expanded='true']::after {
     content: '';
     position: absolute;
     left: 0;
-    top: 0;
-    height: 50%;
+    /* Same origin and length as the li's own stub, so at rest the two coincide
+       exactly rather than drawing two dotted patterns out of phase */
+    top: calc(-1 * var(--pad));
+    height: calc(var(--pad) + 0.75rem);
     border-left: 1px dotted var(--line);
 }
 
