@@ -477,7 +477,7 @@ iframe.pending {
     content: '';
     position: absolute;
     inset: 0;
-    background: rgb(0 0 0 / 0.3) url('/yt.webp') center / 3.75rem no-repeat;
+    background: rgb(0 0 0 / 0.18) url('/yt.webp') center / 3.75rem no-repeat;
     transition: background-color 0.2s ease;
 }
 
