@@ -173,6 +173,12 @@ document.querySelectorAll('img, iframe').forEach(el => {
     wrap.append(bar);
 });
 
+// Position within its list, for the staggered entry. Set once: the lists don't
+// change, so a tab switch has nothing to recompute.
+document.querySelectorAll('[role="tabpanel"] ol').forEach(list => {
+    [...list.children].forEach((li, n) => li.style.setProperty('--n', n));
+});
+
 // Tabs
 const tabs = [...document.querySelectorAll('[role="tab"]')];
 
