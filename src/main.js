@@ -323,31 +323,3 @@ tabs.forEach(t => t.addEventListener('click', () => {
     if (t.getAttribute('aria-selected') === 'true') return;
     selectTab(t);
 }));
-
-// Easter egg: the name is laid over its Malayalam equivalent, and a spotlight
-// under the pointer masks the Latin away to show what's underneath
-const NATIVE_NAME = 'രോഹൻ ഹരികുമാർ';
-
-const heading = document.querySelector('h1');
-if (heading && !reduceMotion.matches) {
-    const given = heading.textContent.trim();
-    heading.setAttribute('aria-label', given); // the accessible name stays put
-    heading.textContent = '';
-
-    const native = document.createElement('span');
-    native.className = 'native';
-    native.setAttribute('aria-hidden', 'true');
-    native.textContent = NATIVE_NAME;
-
-    const latin = document.createElement('span');
-    latin.className = 'latin';
-    latin.textContent = given;
-
-    heading.append(native, latin);
-
-    let box = null;
-    heading.addEventListener('pointerenter', () => { box = heading.getBoundingClientRect(); });
-    heading.addEventListener('pointermove', e => {
-        latin.style.setProperty('--x', `${e.clientX - (box ?? heading.getBoundingClientRect()).left}px`);
-    });
-}
