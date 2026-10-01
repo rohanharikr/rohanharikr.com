@@ -286,6 +286,51 @@ li:last-child>.toggle[aria-expanded='true']::after {
     @apply m-0 w-full;
 }
 
+/* The dark twin over the light screenshot, clipped at the divider. It takes the
+   radius and sizing from the img rules already in place. */
+.compare {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    object-fit: cover;
+    clip-path: inset(0 0 0 var(--pos, 50%));
+}
+
+.divider {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: var(--pos, 50%);
+    width: 1px;
+    background: rgb(255 255 255 / 0.75);
+    cursor: ew-resize;
+    /* or dragging it on a touch screen scrolls the page instead */
+    touch-action: none;
+}
+
+/* centred on the line itself, rather than on the 1px box it overflows, and
+   turned a quarter so the chevrons point the way it drags */
+.divider>svg {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) rotate(90deg);
+    width: 1.25rem;
+    height: 1.25rem;
+    padding: 0.1875rem;
+    border-radius: 9999px;
+    color: #333;
+    background: #fff;
+    box-shadow: 0 1px 3px rgb(0 0 0 / 0.3);
+}
+
+.divider:focus-visible>svg {
+    outline: 2px solid #000;
+    outline-offset: 2px;
+}
+
 .img-links {
     @apply pointer-events-none absolute inset-x-0 bottom-0 z-10 flex flex-wrap gap-1 p-2;
 }

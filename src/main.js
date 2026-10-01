@@ -187,6 +187,81 @@ document.querySelectorAll('[role="tabpanel"] li ol').forEach(list => {
     [...list.children].forEach((li, n) => li.style.setProperty('--n', n));
 });
 
+// Theme comparison: a screenshot with a -dark twin gets the dark one laid over
+// it, clipped at a divider you can drag. Scoped to Work, where every screenshot
+// has one - asking for the others would be a failed request per visit. The
+// error handler is the safety net for one that goes missing.
+const GRIP = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">'
+    + '<path stroke-linecap="round" stroke-linejoin="round" '
+    + 'd="M8.25 15 12 18.75 15.75 15m-7.5-6L12 5.25 15.75 9"/></svg>';
+
+document.querySelectorAll('#work li img').forEach(light => {
+
+    const src = light.getAttribute('src');
+    const twin = src.replace(/(\.[a-z]+)$/i, '-dark$1');
+
+    // reuse the wrapper main.js made for the link buttons, or make one
+    let wrap = light.closest('.img-wrap');
+    if (!wrap) {
+        wrap = document.createElement('div');
+        wrap.className = 'img-wrap';
+        light.before(wrap);
+        wrap.append(light);
+    }
+
+    const dark = document.createElement('img');
+    dark.className = 'compare';
+    dark.alt = '';
+    dark.loading = 'lazy';
+    dark.addEventListener('error', () => { // no twin after all
+        dark.remove();
+        divider.remove();
+    });
+    dark.src = twin;
+    // the lightbox bound its handlers before this layer existed; clipping means
+    // a click only reaches it on the dark side of the divider
+    dark.addEventListener('click', () => open(dark));
+
+    const divider = document.createElement('div');
+    divider.className = 'divider';
+    divider.tabIndex = 0;
+    divider.setAttribute('role', 'slider');
+    divider.setAttribute('aria-label', 'Compare light and dark');
+    divider.setAttribute('aria-valuemin', '0');
+    divider.setAttribute('aria-valuemax', '100');
+    divider.innerHTML = GRIP;
+
+    const at = pct => {
+        const clamped = Math.min(100, Math.max(0, pct));
+        wrap.style.setProperty('--pos', `${clamped}%`);
+        divider.setAttribute('aria-valuenow', Math.round(clamped));
+    };
+    at(50);
+
+    const fromPointer = e => {
+        const box = wrap.getBoundingClientRect();
+        at(((e.clientX - box.left) / box.width) * 100);
+    };
+
+    let dragging = false;
+    divider.addEventListener('pointerdown', e => {
+        dragging = true;
+        divider.setPointerCapture(e.pointerId);
+        e.preventDefault(); // or the drag selects text and the image
+    });
+    divider.addEventListener('pointermove', e => dragging && fromPointer(e));
+    divider.addEventListener('pointerup', () => { dragging = false; });
+    divider.addEventListener('click', e => e.stopPropagation()); // not the lightbox
+    divider.addEventListener('keydown', e => {
+        const step = { ArrowLeft: -2, ArrowRight: 2, Home: -100, End: 100 }[e.key];
+        if (step === undefined) return;
+        e.preventDefault();
+        at(Number(divider.getAttribute('aria-valuenow')) + step);
+    });
+
+    wrap.append(dark, divider);
+});
+
 // Tabs
 const tabs = [...document.querySelectorAll('[role="tab"]')];
 
