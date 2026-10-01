@@ -354,7 +354,7 @@ li:last-child>.toggle[aria-expanded='true']::after {
     grid-area: 1 / 1;
 }
 
-/* The incoming background colour, swept across the viewport behind the page.
+/* The incoming background color, swept across the viewport behind the page.
    Never hit-tested, so hover and clicks keep working mid-animation */
 .sweep {
     position: fixed;
@@ -364,7 +364,7 @@ li:last-child>.toggle[aria-expanded='true']::after {
 }
 
 /* Flat segmented control: a recessed track with the active tab raised out of
-   it. Both colours are mixed from the live theme, so the bar follows the tab. */
+   it. Both colors are mixed from the live theme, so the bar follows the tab. */
 .tabs {
     /* Above the panels in both states: a panel being revealed has a clip-path,
        which paints it as if it were z-index 0, the nav's own layer. */
@@ -381,6 +381,16 @@ li:last-child>.toggle[aria-expanded='true']::after {
     .tabs [role="tab"]:hover {
         background: color-mix(in srgb, var(--line) 30%, var(--bg));
     }
+}
+
+/* Each tab carries both icons; the selected one shows the filled version */
+.tabs [role="tab"] .solid,
+.tabs [role="tab"][aria-selected="true"] svg:not(.solid) {
+    display: none;
+}
+
+.tabs [role="tab"][aria-selected="true"] .solid {
+    display: block;
 }
 
 /* Last, so it also wins on hover */

@@ -240,10 +240,10 @@ function selectTab(tab) {
     document.documentElement.dataset.theme = id;
 
     // The outgoing panel stays where it is; the incoming one is revealed over it
-    // through a circle growing from the centre of the clicked tab. Nothing here
+    // through a circle growing from the center of the clicked tab. Nothing here
     // suppresses hit testing on the page itself, so the tabs stay live.
     // It sits below .sweep so the full-bleed bands its sticky toggles paint
-    // don't show through the reveal in the old colour. The incoming panel needs
+    // don't show through the reveal in the old color. The incoming panel needs
     // no z-index of its own: its clip-path already makes it a stacking context,
     // painted as if it were z-index 0, which is above the sweep.
     old.style.pointerEvents = 'none';
@@ -264,7 +264,7 @@ function selectTab(tab) {
         Math.max(y, innerHeight - y)
     );
 
-    // Two viewport layers behind the page: the outgoing colour, and the incoming
+    // Two viewport layers behind the page: the outgoing color, and the incoming
     // one revealed over it. Both sit under the outgoing panel's own layer.
     const sweep = (color, z) => {
         const el = document.createElement('div');
