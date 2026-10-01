@@ -191,7 +191,7 @@ document.querySelectorAll('[role="tabpanel"] li ol').forEach(list => {
 // it, clipped at a divider you can drag. Scoped to Work, where every screenshot
 // has one - asking for the others would be a failed request per visit. The
 // error handler is the safety net for one that goes missing.
-const GRIP = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">'
+const GRIP = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">'
     + '<path stroke-linecap="round" stroke-linejoin="round" '
     + 'd="M8.25 15 12 18.75 15.75 15m-7.5-6L12 5.25 15.75 9"/></svg>';
 
@@ -246,11 +246,23 @@ document.querySelectorAll('#work li img').forEach(light => {
     let dragging = false;
     divider.addEventListener('pointerdown', e => {
         dragging = true;
+        wrap.classList.add('dragging');
         divider.setPointerCapture(e.pointerId);
         e.preventDefault(); // or the drag selects text and the image
     });
     divider.addEventListener('pointermove', e => dragging && fromPointer(e));
-    divider.addEventListener('pointerup', () => { dragging = false; });
+
+    // every way a drag can end, not just pointerup: leave the window or let the
+    // browser cancel the gesture and it would otherwise stay stuck where it was
+    const release = () => {
+        if (!dragging) return;
+        dragging = false;
+        wrap.classList.remove('dragging');
+        at(50); // eases back to the middle
+    };
+    ['pointerup', 'pointercancel', 'lostpointercapture'].forEach(
+        type => divider.addEventListener(type, release)
+    );
     divider.addEventListener('click', e => e.stopPropagation()); // not the lightbox
     divider.addEventListener('keydown', e => {
         const step = { ArrowLeft: -2, ArrowRight: 2, Home: -100, End: 100 }[e.key];

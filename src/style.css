@@ -286,6 +286,24 @@ li:last-child>.toggle[aria-expanded='true']::after {
     @apply m-0 w-full;
 }
 
+/* Registered, so it can be transitioned: an unregistered custom property is
+   not an animatable type */
+@property --pos {
+    syntax: '<percentage>';
+    inherits: true;
+    initial-value: 50%;
+}
+
+/* Eases back to the middle when a drag ends. Off while dragging, or the
+   divider would lag behind the pointer. */
+.img-wrap {
+    transition: --pos 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.img-wrap.dragging {
+    transition: none;
+}
+
 /* The dark twin over the light screenshot, clipped at the divider. It takes the
    radius and sizing from the img rules already in place. */
 .compare {
@@ -317,8 +335,8 @@ li:last-child>.toggle[aria-expanded='true']::after {
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%) rotate(90deg);
-    width: 1.25rem;
-    height: 1.25rem;
+    width: 1.5rem;
+    height: 1.5rem;
     padding: 0.1875rem;
     border-radius: 9999px;
     color: #333;
