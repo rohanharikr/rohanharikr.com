@@ -580,20 +580,24 @@ iframe.pending {
     initial-value: 0;
 }
 
+/* Both layers share one grid cell, so the heading is as wide as whichever
+   name is longer and neither spills past the other */
 h1 {
-    position: relative;
+    display: grid;
+    /* the name isn't selectable text to drag through, it's the easter egg */
+    cursor: default;
 }
 
-h1 .native {
-    position: absolute;
-    inset: 0;
+h1 .native,
+h1 .latin {
+    grid-area: 1 / 1;
     white-space: nowrap;
 }
 
 h1 .latin {
     --x: 50%;
-    position: relative;
-    display: block;
+    /* opaque, or the layer underneath shows through the gaps between glyphs */
+    background: var(--bg);
     /* at --spot 0 both stops sit at 0, so the layer is fully opaque */
     -webkit-mask-image: radial-gradient(circle at var(--x) 50%,
             transparent calc(var(--spot) * 2.25rem), #000 calc(var(--spot) * 3.5rem));
