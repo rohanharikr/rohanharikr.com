@@ -567,7 +567,9 @@ iframe.pending {
     }
 
     #work li>.date {
-        top: 0.75rem;
+        /* the item's own padding, plus half the difference between the li's
+           leading-6 and text-xs's line box, puts it on the title's baseline */
+        top: calc(var(--pad) + 0.25rem);
         padding-left: 0;
         /* over the toggles' full-bleed bands, which top out at 201 */
         z-index: 210;
