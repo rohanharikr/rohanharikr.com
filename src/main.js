@@ -309,3 +309,52 @@ tabs.forEach(t => t.addEventListener('click', () => {
     if (t.getAttribute('aria-selected') === 'true') return;
     selectTab(t);
 }));
+
+// Easter egg: the name scrambles into its Malayalam equivalent on hover
+const NATIVE_NAME = 'റോഹൻ ഹരികുമാർ';
+const SCRAMBLE = [...'അആഇഈഉഊഎഏഐഒഓകഖഗഘചഛജഝടഠഡഢണതഥദധനപഫബഭമയരലവശഷസഹളഴറ'];
+
+const heading = document.querySelector('h1');
+if (heading) {
+    // by grapheme, not code point: the vowel signs are combining marks and
+    // splitting them off their consonant renders as loose accents
+    const split = str => (self.Intl?.Segmenter
+        ? [...new Intl.Segmenter('ml', { granularity: 'grapheme' }).segment(str)].map(s => s.segment)
+        : [...str]);
+
+    const given = heading.textContent.trim();
+    heading.setAttribute('aria-label', given); // the accessible name stays put
+    let raf = 0;
+
+    const scrambleTo = text => {
+        cancelAnimationFrame(raf);
+        if (reduceMotion.matches) {
+            heading.textContent = text;
+            return;
+        }
+
+        const from = split(heading.textContent);
+        const to = split(text);
+        const plan = Array.from({ length: Math.max(from.length, to.length) }, (_, i) => ({
+            was: from[i] ?? '',
+            will: to[i] ?? '',
+            from: Math.round(Math.random() * 10),
+            until: Math.round(Math.random() * 10) + 14,
+        }));
+        const last = Math.max(...plan.map(c => c.until));
+
+        let f = 0;
+        const tick = () => {
+            heading.textContent = plan.map(c => (
+                f >= c.until ? c.will
+                    : f >= c.from ? SCRAMBLE[Math.floor(Math.random() * SCRAMBLE.length)]
+                        : c.was
+            )).join('');
+            if (f++ < last) raf = requestAnimationFrame(tick);
+        };
+        tick();
+    };
+
+    heading.addEventListener('pointerenter', () => scrambleTo(NATIVE_NAME));
+    heading.addEventListener('pointerleave', () => scrambleTo(given));
+}
