@@ -209,7 +209,9 @@ function commit(tab) {
         panel.removeAttribute('style');
         if (selected) loadEmbeds(panel);
     }
-    document.documentElement.dataset.theme = tab.getAttribute('aria-controls');
+    const id = tab.getAttribute('aria-controls');
+    document.documentElement.dataset.theme = id;
+    document.querySelector('link[rel="icon"]').href = `/favicon-${id}.svg`;
     close(); // in case the lightbox is open
 }
 
