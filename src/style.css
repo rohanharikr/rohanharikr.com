@@ -571,3 +571,37 @@ iframe.pending {
         z-index: 210;
     }
 }
+
+/* The name over its Malayalam equivalent, with a spotlight under the pointer
+   masking the Latin away. Registered, so the radius is transitionable. */
+@property --spot {
+    syntax: '<number>';
+    inherits: false;
+    initial-value: 0;
+}
+
+h1 {
+    position: relative;
+}
+
+h1 .native {
+    position: absolute;
+    inset: 0;
+    white-space: nowrap;
+}
+
+h1 .latin {
+    --x: 50%;
+    position: relative;
+    display: block;
+    /* at --spot 0 both stops sit at 0, so the layer is fully opaque */
+    -webkit-mask-image: radial-gradient(circle at var(--x) 50%,
+            transparent calc(var(--spot) * 2.25rem), #000 calc(var(--spot) * 3.5rem));
+    mask-image: radial-gradient(circle at var(--x) 50%,
+            transparent calc(var(--spot) * 2.25rem), #000 calc(var(--spot) * 3.5rem));
+    transition: --spot 0.45s ease;
+}
+
+h1:hover .latin {
+    --spot: 1;
+}
