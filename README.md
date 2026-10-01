@@ -2,6 +2,8 @@
 
 My portfolio. Live at **[rohanharikr.com](https://rohanharikr.com)**.
 
+[![The site](public/preview.png)](https://rohanharikr.com)
+
 Three files, no framework. The whole site is one HTML page, one stylesheet and
 one script — about 1,400 lines together, and most of that is content.
 
