@@ -173,9 +173,17 @@ document.querySelectorAll('img, iframe').forEach(el => {
     wrap.append(bar);
 });
 
-// Position within its list, for the staggered entry. Set once: the lists don't
-// change, so a tab switch has nothing to recompute.
-document.querySelectorAll('[role="tabpanel"] ol').forEach(list => {
+// Position for the staggered entry, set once: the lists don't change, so a tab
+// switch has nothing to recompute. Counted across a panel's top-level lists
+// rather than within each one - Work has two, and numbering them separately
+// started the education entries alongside the roles instead of after them.
+document.querySelectorAll('[role="tabpanel"]').forEach(panel => {
+    let n = 0;
+    panel.querySelectorAll(':scope > ol > li').forEach(li => li.style.setProperty('--n', n++));
+});
+
+// Nested lists count from their own start: they come in when one is expanded
+document.querySelectorAll('[role="tabpanel"] li ol').forEach(list => {
     [...list.children].forEach((li, n) => li.style.setProperty('--n', n));
 });
 
