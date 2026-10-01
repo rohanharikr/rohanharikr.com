@@ -111,7 +111,9 @@ function close() {
     };
 }
 
+// not the ones standing in for an embed: those are links out to YouTube
 document.querySelectorAll('li img').forEach(img => {
+    if (img.closest('a')) return;
     img.addEventListener('click', () => open(img));
 });
 

@@ -464,10 +464,33 @@ iframe.pending {
     background-color: color-mix(in srgb, var(--line) 30%, var(--bg));
 }
 
+/* A thumbnail standing in for the embed: darkened, with the YouTube mark over
+   it, and the whole thing is the link */
+.yt {
+    position: relative;
+    display: block;
+    border-radius: 0.25rem;
+    overflow: hidden;
+}
+
+.yt::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: rgb(0 0 0 / 0.3) url('/yt.webp') center / 3.75rem no-repeat;
+    transition: background-color 0.2s ease;
+}
+
+
+.yt img {
+    cursor: pointer;
+}
+
 /* main.js wraps media carrying link-* attributes, so the flex item is either
    the embed itself or that wrapper. mt-1 is the step the tree uses here. */
 :is(#play, #fun) li>iframe,
 :is(#play, #fun) li>img,
+:is(#play, #fun) li>.yt,
 :is(#play, #fun) li>.img-wrap {
     flex: none;
     width: 100%;
@@ -492,7 +515,7 @@ iframe.pending {
     border-radius: 0.25rem;
 }
 
-:is(#play, #fun) li .img-wrap>:is(iframe, img) {
+:is(#play, #fun) li :is(.img-wrap, .yt)>:is(iframe, img) {
     flex: none;
     margin: 0;
 }
