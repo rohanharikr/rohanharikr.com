@@ -112,7 +112,7 @@ function close() {
 }
 
 // not the ones standing in for an embed: those are links out to YouTube
-document.querySelectorAll('li img').forEach(img => {
+document.querySelectorAll('li img:not(.emoji)').forEach(img => {
     if (img.closest('a')) return;
     img.addEventListener('click', () => open(img));
 });
@@ -410,3 +410,46 @@ tabs.forEach(t => t.addEventListener('click', () => {
     if (t.getAttribute('aria-selected') === 'true') return;
     selectTab(t);
 }));
+
+// Yoda winds up while the pointer is on him and brakes to a stop when it
+// leaves. The angle is driven here rather than by an animation, because
+// animation-duration can't be interpolated and a hover animation would snap
+// back to zero instead of winding down.
+const yoda = document.querySelector('.emoji');
+if (yoda && !reduceMotion.matches) {
+    const TOP = 18;      // degrees a frame, so about three turns a second
+    const PICKUP = 0.12; // and a steady couple of seconds to get there
+    let angle = 0, speed = 0, raf = 0, brake = 0, landing = 0;
+
+    const frame = () => {
+        if (brake) {
+            // constant deceleration, worked out to arrive exactly upright
+            speed = Math.max(0, speed - brake);
+            angle = Math.min(angle + speed, landing); // never steps past it
+            if (!speed || angle === landing) {
+                speed = brake = 0;
+            }
+        } else {
+            speed = Math.min(TOP, speed + PICKUP); // the same ramp, the other way
+            angle += speed;
+        }
+
+        yoda.style.transform = `rotate(${angle % 360}deg)`;
+        raf = speed || brake ? requestAnimationFrame(frame) : 0;
+    };
+
+    yoda.addEventListener('pointerenter', () => {
+        brake = 0;
+        if (!raf) raf = requestAnimationFrame(frame);
+    });
+
+    yoda.addEventListener('pointerleave', () => {
+        if (!speed) return;
+        // the next time upright comes round, far enough off that he coasts down
+        // over several seconds rather than braking
+        landing = Math.ceil((angle + speed * 120) / 360) * 360;
+        // v^2 / 2a is the distance under continuous braking; stepping it a frame
+        // at a time covers half a frame less, which is the gap he used to jump
+        brake = speed * speed / (2 * (landing - angle + speed / 2));
+    });
+}

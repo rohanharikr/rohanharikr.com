@@ -133,6 +133,18 @@ section li>p {
     margin: 0;
     border: 0;
     border-radius: 0;
+    cursor: default;
+}
+
+
+/* An item taller than one line would centre its connector below where the
+   guide line stops, so this one hangs from the top instead */
+section li:has(> .emoji) {
+    align-items: flex-start;
+}
+
+section li:has(> .emoji)::before {
+    margin-top: 0.75rem;
 }
 
 [hidden] {
