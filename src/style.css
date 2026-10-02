@@ -38,6 +38,7 @@ html:not(.ready) section>ol {
 
 a {
     @apply underline;
+    transition: color 0.2s ease;
 }
 
 img {
@@ -53,9 +54,26 @@ iframe {
     @apply h-[200px] md:h-[343px];
 }
 
-h2,
-p {
+/* Opacity, because the typewriter animates each letter's colour to --final and
+   would override a colour set here */
+h2 {
     @apply text-sm opacity-65;
+}
+
+/* Colour rather than opacity: opacity makes a compositing group, and nothing
+   inside one can be more opaque than it, so a link couldn't come back up to
+   full on hover */
+p {
+    @apply text-sm;
+    color: color-mix(in srgb, currentColor 65%, transparent);
+}
+
+@media (hover: hover) {
+
+    /* not the chips, which are white on black */
+    a:hover:not(.img-links a) {
+        color: #000;
+    }
 }
 
 /* Ahead of the title wherever it sits inline. Ignored once it's positioned
