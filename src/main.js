@@ -195,7 +195,7 @@ const GRIP = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-
     + '<path stroke-linecap="round" stroke-linejoin="round" '
     + 'd="M8.25 15 12 18.75 15.75 15m-7.5-6L12 5.25 15.75 9"/></svg>';
 
-document.querySelectorAll('#work li img').forEach(light => {
+document.querySelectorAll('#work li img:not(.emoji)').forEach(light => {
 
     const src = light.getAttribute('src');
     const twin = src.replace(/(\.[a-z]+)$/i, '-dark$1');
