@@ -207,27 +207,43 @@ section li:has(> .emoji)::before {
 .toggle .label {
     order: 1;
     pointer-events: auto;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
 }
 
-.toggle::before {
-    pointer-events: auto;
+
+/* One animation over both: the icon sits inside the label, so they move as a
+   single thing. The connector stays put, anchored to the tree. Sideways, so
+   the band behind it never travels over the rows above or below. */
+.toggle[aria-expanded='false'] .label {
+    animation: nudge 1.4s ease-in-out infinite;
 }
 
-/* A ring pinging out from behind the + icon, rather than on it: ping fades
-   whatever carries it to nothing. Offset past the connector and the gap. */
-.toggle[aria-expanded='false']::after {
-    content: '';
-    @apply animate-ping pointer-events-none absolute size-2.5 rounded-full;
-    left: 1.375rem;
-    top: 50%;
-    margin-top: -0.3125rem;
-    background-color: rgb(157, 157, 157);
+@keyframes nudge {
+
+    0%,
+    55%,
+    100% {
+        transform: translateX(0);
+    }
+
+    65% {
+        transform: translateX(4px);
+    }
+
+    78% {
+        transform: translateX(-2px);
+    }
+
+    90% {
+        transform: translateX(1px);
+    }
 }
 
 @media (prefers-reduced-motion: reduce) {
-    .toggle[aria-expanded='false']::after {
+    .toggle[aria-expanded='false'] .label {
         animation: none;
-        opacity: 0;
     }
 }
 
@@ -266,14 +282,14 @@ li:last-child>.toggle[aria-expanded='true']::after {
     @apply m-0 w-auto h-auto max-w-[90vw] max-h-[90vh] object-contain shadow-2xl cursor-zoom-out origin-top-left;
 }
 
-.toggle::before {
+.toggle .label::before {
     content: '';
     @apply size-2.5 shrink-0;
     background-color: rgb(157, 157, 157);
     mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' class='animate-pulse' viewBox='0 0 16 16'%3E%3Cpath d='M13 0C14.6569 0 16 1.34315 16 3V13C16 14.6569 14.6569 16 13 16H3C1.34315 16 0 14.6569 0 13V3C0 1.34315 1.34315 0 3 0H13ZM7 3V7H3V9H7V13H9V9H13V7H9V3H7Z'/%3E%3C/svg%3E") center / contain no-repeat;
 }
 
-.toggle[aria-expanded='true']::before {
+.toggle[aria-expanded='true'] .label::before {
     @apply animate-none;
     mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M13 0C14.6569 0 16 1.34315 16 3V13C16 14.6569 14.6569 16 13 16H3C1.34315 16 0 14.6569 0 13V3C0 1.34315 1.34315 0 3 0H13ZM3 7V9H13V7H3Z'/%3E%3C/svg%3E");
 }
